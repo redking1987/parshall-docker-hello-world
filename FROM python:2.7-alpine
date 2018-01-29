@@ -1,0 +1,26 @@
+FROM python:2.7-alpine
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . .
+
+LABEL maintainer="Sean Parshall" \
+	version="1.0
+
+# Install OpenSSH Server and set credentials to root/root
+RUN apt-get install -y openssh-server
+RUN mkdir -p /var/run/sshd
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
+RUN sed -ri 's/PermitRootLogin without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+RUN echo 'root:root' | chpasswd
+
+
+# Expose port 22 for ssh
+EXPOSE 22
+
+CMD flask run --host=0.0.0.0 --port=8088
